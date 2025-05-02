@@ -23,7 +23,8 @@ setup(
         'singer-target-postgres==0.2.4',
         'target-redshift==0.2.4',
         'botocore<1.13.0,>=1.12.253',
-        'snowflake-connector-python==2.2.5'
+        'snowflake-connector-python==2.2.5',
+        'cryptography>=36.0.0'  # Added for private key support
     ],
     setup_requires=[
         "pytest-runner"

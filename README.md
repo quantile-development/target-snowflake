@@ -41,9 +41,24 @@ pip install target-snowflake
    }
    ```
 
+   Alternatively, you can use key pair authentication with a private key file:
+
+   ```json
+   {
+     "snowflake_account": "https://XXXXX.snowflakecomputing.com",
+     "snowflake_username": "myuser",
+     "snowflake_role": "myrole",
+     "snowflake_private_key_path": "/path/to/private_key.p8",
+     "snowflake_private_key_passphrase": "my_passphrase", 
+     "snowflake_database": "my_analytics",
+     "snowflake_schema": "mytapname",
+     "snowflake_warehouse": "dw"
+   }
+   ```
+
 ````
 
-1. Run `target-snowfkajke` against a [Singer](https://singer.io) tap.
+1. Run `target-snowflake` against a [Singer](https://singer.io) tap.
 
  ```bash
  ~/.virtualenvs/tap-something/bin/tap-something \
@@ -68,12 +83,14 @@ here.
 | --------------------------- | --------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `snowflake_account`         | `["string"]`          | `N/A`      | `ACCOUNT` might require the `region` and `cloud` platform where your account is located, in the form of: `<your_account_name>.<region_id>.<cloud>` (e.g. `xy12345.east-us-2.azure`) [Refer to Snowflake's documentation about Account](https://docs.snowflake.net/manuals/user-guide/connecting.html#your-snowflake-account-name-and-url) |
 | `snowflake_username`        | `["string"]`          | `N/A`      |                                                                                                                                                                                                                                                                                                                                           |
-| `snowflake_password`        | `["string", "null"]`  | `null`     |                                                                                                                                                                                                                                                                                                                                           |
+| `snowflake_password`        | `["string", "null"]`  | `null`     | Required if not using private key authentication                                                                                                                                                                                                                                                                                           |
 | `snowflake_role`            | `["string"]`          | `null`     | If not specified, Snowflake will use the user's default role. |
 | `snowflake_database`        | `["string"]`          | `N/A`      |                                                                                                                                                                                                                                                                                                                                           |
 | `snowflake_authenticator`   | `["string"]`          | `"snowflake"` | Speifies the authentication provider for snowflake to use. Valud options are the internal one ("snowflake"), a browser session ("externalbrowser"), or Okta ("https://<your_okta_account_name>.okta.com"). See the snowflake docs for more details.
 | `snowflake_schema`          | `["string", "null"]`  | `"PUBLIC"` |                                                                                                                                                                                                                                                                                                                                           |
 | `snowflake_warehouse`       | `["string"]`          | `N/A`      |                                                                                                                                                                                                                                                                                                                                           |
+| `snowflake_private_key_path`| `["string", "null"]`  | `null`     | Path to the private key file (.p8) for key pair authentication. Required if not using password authentication                                                                                                                                                                                                                               |
+| `snowflake_private_key_passphrase`| `["string", "null"]`  | `null`     | Passphrase for the private key file, if the key is encrypted                                                                                                                                                                                                                                                                                |
 | `invalid_records_detect`    | `["boolean", "null"]` | `true`     | Include `false` in your config to disable crashing on invalid records                                                                                                                                                                                                                                                                     |
 | `invalid_records_threshold` | `["integer", "null"]` | `0`        | Include a positive value `n` in your config to allow at most `n` invalid records per stream before giving up.                                                                                                                                                                                                                             |
 | `disable_collection`        | `["string", "null"]`  | `false`    | Include `true` in your config to disable [Singer Usage Logging](#usage-logging).                                                                                                                                                                                                                                                          |

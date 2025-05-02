@@ -13,22 +13,35 @@ REQUIRED_CONFIG_KEYS = [
     'snowflake_warehouse',
     'snowflake_database',
     'snowflake_username',
-    'snowflake_password'
+    # Password is no longer strictly required if using private key auth
 ]
 
 
 def main(config, input_stream=None):
-    with connect(
-            user=config.get('snowflake_username'),
-            password=config.get('snowflake_password'),
-            role=config.get('snowflake_role'),
-            authenticator=config.get('snowflake_authenticator', 'snowflake'),
-            account=config.get('snowflake_account'),
-            warehouse=config.get('snowflake_warehouse'),
-            database=config.get('snowflake_database'),
-            schema=config.get('snowflake_schema', 'PUBLIC'),
-            autocommit=False
-    ) as connection:
+    # Check for authentication method
+    if not config.get('snowflake_password') and not config.get('snowflake_private_key_path'):
+        raise Exception("Either 'snowflake_password' or 'snowflake_private_key_path' must be provided")
+        
+    connection_params = {
+        'user': config.get('snowflake_username'),
+        'role': config.get('snowflake_role'),
+        'authenticator': config.get('snowflake_authenticator', 'snowflake'),
+        'account': config.get('snowflake_account'),
+        'warehouse': config.get('snowflake_warehouse'),
+        'database': config.get('snowflake_database'),
+        'schema': config.get('snowflake_schema', 'PUBLIC'),
+        'autocommit': False
+    }
+    
+    # Add authentication parameters based on provided config
+    if config.get('snowflake_password'):
+        connection_params['password'] = config.get('snowflake_password')
+    elif config.get('snowflake_private_key_path'):
+        connection_params['private_key_path'] = config.get('snowflake_private_key_path')
+        if config.get('snowflake_private_key_passphrase'):
+            connection_params['private_key_passphrase'] = config.get('snowflake_private_key_passphrase')
+
+    with connect(**connection_params) as connection:
         s3_config = config.get('target_s3')
 
         s3 = None
