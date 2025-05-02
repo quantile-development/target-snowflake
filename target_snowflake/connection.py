@@ -3,10 +3,10 @@ import re
 import time
 import os
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, PrivateFormat, NoEncryption
 
 import singer
-from snowflake.connector import DictCursor, SnowflakeConnection
+from snowflake.connector import SnowflakeConnection
 from snowflake.connector.cursor import SnowflakeCursor
 from snowflake.connector.json_result import DictJsonResult
 
@@ -72,7 +72,7 @@ class Connection(SnowflakeConnection):
 def load_private_key(p_key, passphrase=None):
     """
     Load a private key from a PEM string with an optional passphrase.
-    Returns a private key object that can be used with the Snowflake connector.
+    Returns a private key object in the format expected by Snowflake connector.
     """
     if passphrase:
         passphrase = passphrase.encode()
@@ -83,7 +83,14 @@ def load_private_key(p_key, passphrase=None):
         backend=default_backend()
     )
     
-    return p_key_object
+    # Convert the key to DER format as bytes, which is what Snowflake connector expects
+    p_key_bytes = p_key_object.private_bytes(
+        encoding=Encoding.DER,
+        format=PrivateFormat.PKCS8,
+        encryption_algorithm=NoEncryption()
+    )
+    
+    return p_key_bytes
 
 
 def connect(**kwargs):
